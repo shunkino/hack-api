@@ -52,6 +52,12 @@ function handleEvent(event) {
       client.pushMessage(event.source.userId, [{
         "text" : '近くに燃えるのゴミ箱があります',
         "type" : 'text'
+      },{
+        "type": "location",
+        "title": "ここにあります。",
+        "address": "東京大学本郷キャンパス工学部２号館",
+        "latitude": 35.7144598,
+        "longitude": 139.7620094
       }, {
         "type": "template",
         "altText": "ゴミを捨てますか？",
