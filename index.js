@@ -84,10 +84,10 @@ function handleEvent(event) {
 
   if(event.message.text === 'いっぱい' && event.message.text === 'まだ大丈夫' && event.message.text === 'ポイントは？'){
     level ++ ;
-    client.pushMessage(event.source.userId, [[{
+    client.pushMessage(event.source.userId, [{
       "text" : 'ありがとうございます！',
       "type" : 'text'
-    }],[{
+    },{
       "text" : 'あなたは'+level+'pointあります。',
       "type" : 'text'
     }]
