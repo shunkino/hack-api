@@ -48,11 +48,11 @@ function handleEvent(event) {
   if (event.beacon.type === 'enter'){
     console.log('req.body.events');
 
-    client.multicast(['U4577fa37ae7f522822aae54146978712'], {
-      "text": event.message.text ,
-      "type" : 'text'
-      }
-    );
+    // client.multicast(['U4577fa37ae7f522822aae54146978712'], {
+    //   "text": event.message.text ,
+    //   "type" : 'text'
+    //   }
+    // );
   }
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
