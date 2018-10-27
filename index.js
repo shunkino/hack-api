@@ -82,7 +82,7 @@ function handleEvent(event) {
   }
 
 
-  if(event.message.text === 'いっぱい' && event.message.text === 'まだ大丈夫' && event.message.text === 'ポイントは？'){
+  if(event.message.text === 'いっぱい' || event.message.text === 'まだ大丈夫' || event.message.text === 'ポイントは？'){
     level ++ ;
     client.pushMessage(event.source.userId, [{
       "text" : 'ありがとうございます！',
@@ -97,7 +97,11 @@ function handleEvent(event) {
     setTimeout(myFunc, 3000);
 
   }else if(event.message.text === 'はい'){
-    level ++ ;
+    if(level >5){
+      level=0;
+    }else{
+      level ++ ;
+    }
     client.pushMessage(event.source.userId, [{
       "type": "location",
       "title": "ここにあります。",
