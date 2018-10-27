@@ -20,17 +20,30 @@ const app = express();
 
 app.post('/webhook', line.middleware(config), (req, res) => {
     console.log(req.body.events);
-    res.json(req.body.events) // req.body will be webhook event object
+    // res.json(req.body.events); // req.body will be webhook event object
 
     Promise
       .all(req.body.events.map(handleEvent))
-      .then((result) => res.json(result));
+      .catch(function (err) {
+        console.log("before then");
+        console.log(err);
+      })
+      .then((result) => res.json(result))
+      .catch(function (err) {
+        console.log( "Something bad happens in webhook call");
+        console.log( "Something bad happens in webhook call");
+        console.log(err);
+        process.exit(1);
+      });
 });
 
 app.get('/trashkan/1/status', function (req, res) {
   res.send(can_flag);
 })
 
+app.get('/', function (req, res) {
+  res.send("Hello, world1");
+})
 
 app.use((err, req, res, next) => {
   if (err instanceof SignatureValidationFailed) {
@@ -44,6 +57,7 @@ app.use((err, req, res, next) => {
 })
 
 const client = new line.Client(config);
+const img_url = "https://previews.123rf.com/images/olli0815/olli08151601/olli0815160100023/50250427-%E3%81%B2%E3%82%88%E3%81%93%E3%81%AE%E3%82%AF%E3%83%AD%E3%83%BC%E3%82%BA-%E3%82%A2%E3%83%83%E3%83%97%E5%86%99%E7%9C%9F%E3%80%82.jpg"
 
 function handleEvent(event) {
 
@@ -51,8 +65,18 @@ function handleEvent(event) {
     if (event.beacon.type === 'enter'){
 
       client.pushMessage(event.source.userId, [{
-        "text" : '近くに燃えるのゴミ箱があります',
+        "text" : '近くに燃えるゴミ用の箱があります。',
         "type" : 'text'
+      }, {
+      "type": "location",
+      "title": "ここにあります。",
+      "address": "東京大学本郷キャンパス工学部２号館",
+      "latitude": 35.7144598,
+      "longitude": 139.7620094
+      }, {
+      "type": "image",
+      "originalContentUrl": img_url,
+      "previewImageUrl": img_url 
       }, {
         "type": "template",
         "altText": "ゴミを捨てますか？",
@@ -74,6 +98,12 @@ function handleEvent(event) {
           }
         }]
       );
+    } else if (event.beacon.type === 'leave'){
+      // Exiting from zone
+       client.pushMessage(event.source.userId, [{
+        "text" : 'ばいばい',
+        "type" : 'text'
+      }]);    
     }
   }
 
@@ -83,7 +113,7 @@ function handleEvent(event) {
 
 
   if(event.message.text === 'いっぱい' || event.message.text === 'まだ大丈夫' || event.message.text === 'ポイントは？'){
-    level ++ ;
+    // level++;
     client.pushMessage(event.source.userId, [{
       "text" : 'ありがとうございます！',
       "type" : 'text'
@@ -93,27 +123,21 @@ function handleEvent(event) {
     }]
   );
 
-    can_flag = "1";
     setTimeout(myFunc, 3000);
 
   }else if(event.message.text === 'はい'){
-    if(level >5){
-      level=0;
+    can_flag = "1";
+    if(level > 5){
+      level = 0;
     }else{
-      level ++ ;
+      level++;
     }
     client.pushMessage(event.source.userId, [{
-      "type": "location",
-      "title": "ここにあります。",
-      "address": "東京大学本郷キャンパス工学部２号館",
-      "latitude": 35.7144598,
-      "longitude": 139.7620094
-        }, {
       "type": "template",
-      "altText": "ゴミはいっぱいですか？",
+      "altText": "ゴミ箱はいっぱいでしたか？",
       "template": {
           "type": "confirm",
-          "text": "ゴミはいっぱいですか？",
+          "text": "ゴミ箱はいっぱいでしたか？",
           "actions": [
               {
                 "type": "message",
