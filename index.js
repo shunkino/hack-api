@@ -5,6 +5,8 @@ const line = require('@line/bot-sdk');
 const middleware = require('@line/bot-sdk').middleware
 const JSONParseError = require('@line/bot-sdk').JSONParseError
 const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed
+const os = require('os');
+const hostname = os.hostname();
 
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
@@ -31,7 +33,6 @@ app.post('/webhook', line.middleware(config), (req, res) => {
       .then((result) => res.json(result))
       .catch(function (err) {
         console.log( "Something bad happens in webhook call");
-        console.log( "Something bad happens in webhook call");
         console.log(err);
         process.exit(1);
       });
@@ -45,6 +46,8 @@ app.get('/', function (req, res) {
   res.send("Hello, world1");
 })
 
+app.use('/images', express.static('images'))
+
 app.use((err, req, res, next) => {
   if (err instanceof SignatureValidationFailed) {
     res.status(401).send(err.signature)
@@ -57,7 +60,7 @@ app.use((err, req, res, next) => {
 })
 
 const client = new line.Client(config);
-const img_url = "https://previews.123rf.com/images/olli0815/olli08151601/olli0815160100023/50250427-%E3%81%B2%E3%82%88%E3%81%93%E3%81%AE%E3%82%AF%E3%83%AD%E3%83%BC%E3%82%BA-%E3%82%A2%E3%83%83%E3%83%97%E5%86%99%E7%9C%9F%E3%80%82.jpg"
+const img_url = "https://" + hostname + "/images/img.jpg"
 
 function handleEvent(event) {
 
