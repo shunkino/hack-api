@@ -8,8 +8,8 @@ const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFa
 
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
-var can_flag = "0" ;
-var level = 0 ;
+var can_flag = "0";
+var level = 0;
 
 const config = {
     channelAccessToken: process.env.LINE_ACCESS_TOKEN,
@@ -91,6 +91,7 @@ function handleEvent(event) {
       "text" : 'あなたは'+level+'pointあります。',
       "type" : 'text'
     }]
+  );
 
     can_flag = "1";
     setTimeout(myFunc, 3000);
