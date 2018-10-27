@@ -2,19 +2,25 @@
 
 const express = require('express');
 const line = require('@line/bot-sdk');
+const middleware = require('@line/bot-sdk').middleware
+const JSONParseError = require('@line/bot-sdk').JSONParseError
+const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed
+
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
 var can_flag = "0" ;
 
 const config = {
-    channelAccessToken: process.env.CHANNEL_ACCESSTOKEN,
-    channelSecret: process.env.CHANNEL_SECRET
+    channelAccessToken: process.env.LINE_ACCESS_TOKEN,
+    channelSecret: process.env.LINE_CHANNEL_SECRET
 };
 
 const app = express();
 
 app.post('/webhook', line.middleware(config), (req, res) => {
     console.log(req.body.events);
+    res.json(req.body.events) // req.body will be webhook event object
+
     Promise
       .all(req.body.events.map(handleEvent))
       .then((result) => res.json(result));
@@ -25,9 +31,29 @@ app.get('/trashkan/1/status', function (req, res) {
 })
 
 
+app.use((err, req, res, next) => {
+  if (err instanceof SignatureValidationFailed) {
+    res.status(401).send(err.signature)
+    return
+  } else if (err instanceof JSONParseError) {
+    res.status(400).send(err.raw)
+    return
+  }
+  next(err) // will throw default 500
+})
+
 const client = new line.Client(config);
 
 function handleEvent(event) {
+  if (event.beacon.type === 'enter'){
+    console.log('req.body.events');
+
+    client.multicast(['U4577fa37ae7f522822aae54146978712'], {
+      "text": event.message.text ,
+      "type" : 'text'
+      }
+    );
+  }
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
