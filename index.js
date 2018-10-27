@@ -52,12 +52,6 @@ function handleEvent(event) {
       client.pushMessage(event.source.userId, [{
         "text" : '近くに燃えるのゴミ箱があります',
         "type" : 'text'
-      },{
-        "type": "location",
-        "title": "ここにあります。",
-        "address": "東京大学本郷キャンパス工学部２号館",
-        "latitude": 35.7144598,
-        "longitude": 139.7620094
       }, {
         "type": "template",
         "altText": "ゴミを捨てますか？",
@@ -87,48 +81,33 @@ function handleEvent(event) {
   }
 
 
-  // if(event.message.text === '天気教えて！'){
-  //   client.replyMessage(event.replyToken, {
-  //     "text" : 'ちょっとまってね',
-  //     "type" : 'text'
-  //   });
-  //   getNodeVer(event.source.userId);
-  // }else
-  // if(event.message.text === 'あああ'){
-  //   client.replyMessage(event.replyToken,[{
-  //     "text" : '近くに燃えるのゴミ箱があります',
-  //     "type" : 'text'
-  //   }, {
-  //     "type": "template",
-  //     "altText": "this is a confirm template",
-  //     "template": {
-  //         "type": "confirm",
-  //         "text": "ゴミを捨てますか？",
-  //         "actions": [
-  //             {
-  //               "type": "message",
-  //               "label": "はい",
-  //               "text": "はい"
-  //             },
-  //             {
-  //               "type": "message",
-  //               "label": "いいえ",
-  //               "text": "いいえ"
-  //             }
-  //         ]
-  //       }
-  //     }]
-  //   );
-  //
-  // }else
   if(event.message.text === 'はい'){
-    client.replyMessage(event.replyToken, {
+    client.pushMessage(event.source.userId, [{
       "type": "location",
       "title": "ここにあります。",
       "address": "東京大学本郷キャンパス工学部２号館",
       "latitude": 35.7144598,
       "longitude": 139.7620094
+        }, {
+      "type": "template",
+      "altText": "ゴミはいっぱいですか？",
+      "template": {
+          "type": "confirm",
+          "text": "ゴミはいっぱいですか？",
+          "actions": [
+              {
+                "type": "message",
+                "label": "いっぱい",
+                "text": "いっぱい"
+              },
+              {
+                "type": "message",
+                "label": "まだ大丈夫",
+                "text": "まだ大丈夫"
+              }
+          ]
         }
+      }]
     );
 
     can_flag = "1";
