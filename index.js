@@ -9,6 +9,7 @@ const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFa
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
 var can_flag = "0" ;
+var level = 0 ;
 
 const config = {
     channelAccessToken: process.env.LINE_ACCESS_TOKEN,
@@ -81,7 +82,21 @@ function handleEvent(event) {
   }
 
 
-  if(event.message.text === 'はい'){
+  if(event.message.text === 'いっぱい' && event.message.text === 'まだ大丈夫' && event.message.text === 'ポイントは？'){
+    level ++ ;
+    client.pushMessage(event.source.userId, [[{
+      "text" : 'ありがとうございます！',
+      "type" : 'text'
+    }],[{
+      "text" : 'あなたは'+level+'pointあります。',
+      "type" : 'text'
+    }]
+
+    can_flag = "1";
+    setTimeout(myFunc, 3000);
+
+  }else if(event.message.text === 'はい'){
+    level ++ ;
     client.pushMessage(event.source.userId, [{
       "type": "location",
       "title": "ここにあります。",
