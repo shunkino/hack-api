@@ -49,10 +49,29 @@ function handleEvent(event) {
   if(event.beacon){
     if (event.beacon.type === 'enter'){
 
-      client.pushMessage(event.source.userId, {
-        "text": 'event.message.text' ,
+      client.pushMessage(event.source.userId, [{
+        "text" : '近くに燃えるのゴミ箱があります',
         "type" : 'text'
-        }
+      }, {
+        "type": "template",
+        "altText": "this is a confirm template",
+        "template": {
+            "type": "confirm",
+            "text": "ゴミを捨てますか？",
+            "actions": [
+                {
+                  "type": "message",
+                  "label": "はい",
+                  "text": "はい"
+                },
+                {
+                  "type": "message",
+                  "label": "いいえ",
+                  "text": "いいえ"
+                }
+            ]
+          }
+        }]
       );
     }
   }
@@ -69,33 +88,34 @@ function handleEvent(event) {
   //   });
   //   getNodeVer(event.source.userId);
   // }else
-  if(event.message.text === 'あああ'){
-    client.replyMessage(event.replyToken,[{
-      "text" : 'このゴミ箱は燃えるゴミ',
-      "type" : 'text'
-    }, {
-      "type": "template",
-      "altText": "this is a confirm template",
-      "template": {
-          "type": "confirm",
-          "text": "ゴミを捨てますか？",
-          "actions": [
-              {
-                "type": "message",
-                "label": "はい",
-                "text": "はい"
-              },
-              {
-                "type": "message",
-                "label": "いいえ",
-                "text": "いいえ"
-              }
-          ]
-        }
-      }]
-    );
-
-  }else if(event.message.text === 'はい'){
+  // if(event.message.text === 'あああ'){
+  //   client.replyMessage(event.replyToken,[{
+  //     "text" : '近くに燃えるのゴミ箱があります',
+  //     "type" : 'text'
+  //   }, {
+  //     "type": "template",
+  //     "altText": "this is a confirm template",
+  //     "template": {
+  //         "type": "confirm",
+  //         "text": "ゴミを捨てますか？",
+  //         "actions": [
+  //             {
+  //               "type": "message",
+  //               "label": "はい",
+  //               "text": "はい"
+  //             },
+  //             {
+  //               "type": "message",
+  //               "label": "いいえ",
+  //               "text": "いいえ"
+  //             }
+  //         ]
+  //       }
+  //     }]
+  //   );
+  //
+  // }else
+  if(event.message.text === 'はい'){
     client.replyMessage(event.replyToken, {
       "type": "location",
       "title": "ここにあるよ！",
