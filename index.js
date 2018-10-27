@@ -11,7 +11,6 @@ const hostname = os.hostname();
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
 var can_flag = "0";
-var level = 0;
 
 const config = {
     channelAccessToken: process.env.LINE_ACCESS_TOKEN,
@@ -19,6 +18,8 @@ const config = {
 };
 
 const app = express();
+
+var user_hash = {};
 
 app.post('/webhook', line.middleware(config), (req, res) => {
     console.log(req.body.events);
@@ -38,7 +39,7 @@ app.post('/webhook', line.middleware(config), (req, res) => {
       });
 });
 
-app.get('/trashkan/1/status', function (req, res) {
+app.get('/trashcan/1/status', function (req, res) {
   res.send(can_flag);
 })
 
@@ -66,6 +67,12 @@ function handleEvent(event) {
 
   if(event.beacon){
     if (event.beacon.type === 'enter'){
+      if (user_hash[event.source.userId] == undefined) {
+        user_hash[event.source.userId] = {}
+        user_hash[event.source.userId]["areaID"] = "";
+        user_hash[event.source.userId]["level"] = 0; 
+      }
+      user_hash[event.source.userId]["areaID"] = event.beacon.hwid; 
 
       client.pushMessage(event.source.userId, [{
         "text" : '近くに燃えるゴミ用の箱があります。',
@@ -102,8 +109,9 @@ function handleEvent(event) {
         }]
       );
     } else if (event.beacon.type === 'leave'){
+      user_hash[event.source.userId]["areaID"] = ""; 
       // Exiting from zone
-       client.pushMessage(event.source.userId, [{
+      client.pushMessage(event.source.userId, [{
         "text" : 'ばいばい',
         "type" : 'text'
       }]);    
@@ -121,19 +129,20 @@ function handleEvent(event) {
       "text" : 'ありがとうございます！',
       "type" : 'text'
     },{
-      "text" : 'あなたは'+level+'pointあります。',
+      "text" : 'あなたは'+ user_hash[event.source.userId]["level"] + 'pointあります。',
       "type" : 'text'
     }]
   );
 
     setTimeout(myFunc, 3000);
 
-  }else if(event.message.text === 'はい'){
+  } else if(event.message.text === 'はい'){
     can_flag = "1";
-    if(level > 5){
-      level = 0;
+    let cur_user_level = user_hash[event.source.userId]["level"];
+    if(cur_user_level > 5){
+      user_hash[event.source.userId]["level"] = 0;
     }else{
-      level++;
+      user_hash[event.source.userId]["level"] = cur_user_level + 1;
     }
     client.pushMessage(event.source.userId, [{
       "type": "template",
