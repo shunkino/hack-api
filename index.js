@@ -48,9 +48,8 @@ function handleEvent(event) {
 
   if(event.beacon){
     if (event.beacon.type === 'enter'){
-      console.log('あああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ');
 
-      client.multicast(['U4577fa37ae7f522822aae54146978712'], {
+      client.pushMessage(event.source.userId, {
         "text": 'event.message.text' ,
         "type" : 'text'
         }
