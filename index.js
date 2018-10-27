@@ -43,7 +43,7 @@ app.get('/trashkan/1/status', function (req, res) {
 })
 
 app.get('/', function (req, res) {
-  res.send("Hello, world1");
+  res.send("https://" + hostname + "/images/img.jpg");
 })
 
 app.use('/images', express.static('images'))
@@ -60,7 +60,7 @@ app.use((err, req, res, next) => {
 })
 
 const client = new line.Client(config);
-const img_url = "https://" + hostname + "/images/img.jpg"
+const img_url = "https://hack-api-gomi.now.sh/images/img.jpg"
 
 function handleEvent(event) {
 
