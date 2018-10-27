@@ -46,7 +46,7 @@ const client = new line.Client(config);
 
 function handleEvent(event) {
 
-  if(typeof(event.beacon) !== 'undefined'){
+  if(event.beacon){
     if (event.beacon.type === 'enter'){
       console.log('req.body.events');
 
