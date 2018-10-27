@@ -54,7 +54,7 @@ function handleEvent(event) {
         "type" : 'text'
       }, {
         "type": "template",
-        "altText": "this is a confirm template",
+        "altText": "ゴミを捨てますか？",
         "template": {
             "type": "confirm",
             "text": "ゴミを捨てますか？",
@@ -118,7 +118,7 @@ function handleEvent(event) {
   if(event.message.text === 'はい'){
     client.replyMessage(event.replyToken, {
       "type": "location",
-      "title": "ここにあるよ！",
+      "title": "ここにあります。",
       "address": "東京大学本郷キャンパス工学部２号館",
       "latitude": 35.7144598,
       "longitude": 139.7620094
