@@ -7,6 +7,7 @@ const JSONParseError = require('@line/bot-sdk').JSONParseError
 const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed
 const os = require('os');
 const hostname = os.hostname();
+const request = require('request');
 
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
@@ -63,6 +64,45 @@ app.use((err, req, res, next) => {
 const client = new line.Client(config);
 const img_url = "https://hack-api-gomi.now.sh/images/img.jpg"
 
+function getObjectName(image_data) {
+  console.log(image_data.length)
+  let result;
+  let body_json;
+  let url = "https://www3.arche.blue/mvp5/v1/1031/search";
+  let req = request.post(url, function (err, resp, body) {
+    if (err) {
+      console.log('Error!');
+    } else {
+      console.log(body)
+      body_json = JSON.parse(body);
+      result = body_json[0].associatedInfo[1];
+      console.log('Object Name: ' + body_json[0].associatedInfo[1]);
+      if (result == "Trash Can") {
+        client.pushMessage(event.source.userId, [{
+          "text" : '画像の投稿ありがとうございます！',
+          "type" : 'text'
+        }]);
+      } else {
+
+        client.pushMessage(event.source.userId, [{
+          "text" : '残念ながらこれはゴミ箱ではありません',
+          "type" : 'text'
+        }]);
+      }
+    }
+  });
+
+  let form = req.form();
+  form.append('image', image_data);
+    // form.append('image', new Blob(image_buf, { name : 'posted_image.jpg' }));
+    // File([buffer], 'ファイル名', { type:mimeType } );
+    // form.append('image', image_buf,   {
+    //   filename: 'posted_image.jpg',
+    //   name: 'posted_image.jpg',
+    //   contentType: 'image/jpg'
+    // });
+}
+
 function handleEvent(event) {
 
   if(event.beacon){
@@ -110,12 +150,50 @@ function handleEvent(event) {
     }
   }
 
+  if (event.message.type == 'image') {
+    let image_buf;
+    const options = {
+      url: `https://api.line.me/v2/bot/message/${event.message.id}/content`,
+      method: 'get',
+      headers: {
+        'Authorization': 'Bearer ' + config.channelAccessToken,
+      },
+      encoding: null
+    };
+    var req = https.request(send_options, function(res){
+      var data = [];
+      res.on('data', function(chunk){
+        //image data dividing it in to multiple request
+        data.push(new Buffer(chunk));
+      }).on('error', function(err){
+        console.log(err);
+      }).on('end', function(){
+        // ここに画像取得後の処理を書く
+        // この場合は、引数で受け取った画像取得後の処理用callbackを実行
+        // dataに画像のバイナリデータが入ってる
+        getObjectName(data);
+      });
+    });
+    // request(options, function(error, response, body) {
+    //   if (!error && response.statusCode == 200) {
+    //     // image_buf = body
+    //     image_buf = new Buffer(body)
+    //     console.log('file recieved');
+    //     getObjectName(image_buf.toString('binary'));
+    //   } else {
+    //     console.log(error);
+    //     process.exit(1);
+    //   }
+    // });
+    
+  }
+
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
 
 
-  if(event.message.text === 'いっぱい' || event.message.text === 'まだ大丈夫' || event.message.text === 'ポイントは？'){
+  if (event.message.text === 'いっぱい' || event.message.text === 'まだ大丈夫' || event.message.text === 'ポイントは？') {
     // level++;
     client.pushMessage(event.source.userId, [{
       "text" : 'ありがとうございます！',
@@ -128,12 +206,12 @@ function handleEvent(event) {
 
     setTimeout(myFunc, 3000);
 
-  } else if(event.message.text === 'はい'){
+  } else if (event.message.text === 'はい') {
     can_flag = "1";
     let cur_user_level = user_hash[event.source.userId]["level"];
-    if(cur_user_level > 5){
+    if (cur_user_level > 5) {
       user_hash[event.source.userId]["level"] = 0;
-    }else{
+    } else {
       user_hash[event.source.userId]["level"] = cur_user_level + 1;
     }
     client.pushMessage(event.source.userId, [{
@@ -160,8 +238,7 @@ function handleEvent(event) {
 
     can_flag = "1";
     setTimeout(myFunc, 3000);
-
-  }else{
+  } else {
     client.replyMessage(event.replyToken, {
       "text": event.message.text ,
       "type" : 'text'
