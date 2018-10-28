@@ -74,39 +74,31 @@ function handleEvent(event) {
       }
       user_hash[event.source.userId]["areaID"] = event.beacon.hwid; 
 
-      client.pushMessage(event.source.userId, [{
-        "text" : '近くに燃えるゴミ用の箱があります。',
-        "type" : 'text'
+      client.pushMessage(event.source.userId, [ {
+        type: 'template',
+        altText: 'スマートフォンから確認してください',
+        template: {
+          type: 'buttons',
+          title: 'お知らせ', // 40文字以内
+          text: '近くに燃えるゴミ用のゴミ箱があります。ゴミはゴミ箱へ捨てましょう！捨てに行きますか？', // 60文字以内
+          thumbnailImageUrl: img_url, // httpsのみ可
+          actions: [{
+            type: 'message',
+            label: 'はい',
+            text: 'はい'
+          }, {
+            type: 'message',
+            label: 'いいえ',
+            text: 'いいえ'
+          }]
+        }
       }, {
-      "type": "location",
-      "title": "ここにあります。",
-      "address": "東京大学本郷キャンパス工学部２号館",
-      "latitude": 35.7144598,
-      "longitude": 139.7620094
-      }, {
-      "type": "image",
-      "originalContentUrl": img_url,
-      "previewImageUrl": img_url 
-      }, {
-        "type": "template",
-        "altText": "ゴミを捨てますか？",
-        "template": {
-            "type": "confirm",
-            "text": "ゴミを捨てますか？",
-            "actions": [
-                {
-                  "type": "message",
-                  "label": "はい",
-                  "text": "はい"
-                },
-                {
-                  "type": "message",
-                  "label": "いいえ",
-                  "text": "いいえ"
-                }
-            ]
-          }
-        }]
+        type: 'location',
+        title: 'ここにあります。',
+        address: '東京大学本郷キャンパス工学部２号館',
+        latitude: 35.7144598,
+        longitude: 139.7620094
+      }]
       );
     } else if (event.beacon.type === 'leave'){
       user_hash[event.source.userId]["areaID"] = ""; 
