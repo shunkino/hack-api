@@ -5,11 +5,12 @@ const line = require('@line/bot-sdk');
 const middleware = require('@line/bot-sdk').middleware
 const JSONParseError = require('@line/bot-sdk').JSONParseError
 const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed
+const os = require('os');
+const hostname = os.hostname();
 
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
 var can_flag = "0";
-var level = 0;
 
 const config = {
     channelAccessToken: process.env.LINE_ACCESS_TOKEN,
@@ -18,19 +19,35 @@ const config = {
 
 const app = express();
 
+var user_hash = {};
+
 app.post('/webhook', line.middleware(config), (req, res) => {
     console.log(req.body.events);
-    res.json(req.body.events) // req.body will be webhook event object
+    // res.json(req.body.events); // req.body will be webhook event object
 
     Promise
       .all(req.body.events.map(handleEvent))
-      .then((result) => res.json(result));
+      .catch(function (err) {
+        console.log("before then");
+        console.log(err);
+      })
+      .then((result) => res.json(result))
+      .catch(function (err) {
+        console.log( "Something bad happens in webhook call");
+        console.log(err);
+        process.exit(1);
+      });
 });
 
-app.get('/trashkan/1/status', function (req, res) {
+app.get('/trashcan/1/status', function (req, res) {
   res.send(can_flag);
 })
 
+app.get('/', function (req, res) {
+  res.send("https://" + hostname + "/images/img.jpg");
+})
+
+app.use('/images', express.static('images'))
 
 app.use((err, req, res, next) => {
   if (err instanceof SignatureValidationFailed) {
@@ -44,36 +61,52 @@ app.use((err, req, res, next) => {
 })
 
 const client = new line.Client(config);
+const img_url = "https://hack-api-gomi.now.sh/images/img.jpg"
 
 function handleEvent(event) {
 
   if(event.beacon){
     if (event.beacon.type === 'enter'){
+      if (user_hash[event.source.userId] == undefined) {
+        user_hash[event.source.userId] = {}
+        user_hash[event.source.userId]["areaID"] = "";
+        user_hash[event.source.userId]["level"] = 0; 
+      }
+      user_hash[event.source.userId]["areaID"] = event.beacon.hwid; 
 
-      client.pushMessage(event.source.userId, [{
-        "text" : '近くに燃えるのゴミ箱があります',
-        "type" : 'text'
+      client.pushMessage(event.source.userId, [ {
+        type: 'template',
+        altText: 'スマートフォンから確認してください',
+        template: {
+          type: 'buttons',
+          title: 'お知らせ', // 40文字以内
+          text: '近くに燃えるゴミ用のゴミ箱があります。ゴミはゴミ箱へ捨てましょう！捨てに行きますか？', // 60文字以内
+          thumbnailImageUrl: img_url, // httpsのみ可
+          actions: [{
+            type: 'message',
+            label: 'はい',
+            text: 'はい'
+          }, {
+            type: 'message',
+            label: 'いいえ',
+            text: 'いいえ'
+          }]
+        }
       }, {
-        "type": "template",
-        "altText": "ゴミを捨てますか？",
-        "template": {
-            "type": "confirm",
-            "text": "ゴミを捨てますか？",
-            "actions": [
-                {
-                  "type": "message",
-                  "label": "はい",
-                  "text": "はい"
-                },
-                {
-                  "type": "message",
-                  "label": "いいえ",
-                  "text": "いいえ"
-                }
-            ]
-          }
-        }]
+        type: 'location',
+        title: 'ここにあります。',
+        address: '東京大学本郷キャンパス工学部２号館',
+        latitude: 35.7144598,
+        longitude: 139.7620094
+      }]
       );
+    } else if (event.beacon.type === 'leave'){
+      user_hash[event.source.userId]["areaID"] = ""; 
+      // Exiting from zone
+      client.pushMessage(event.source.userId, [{
+        "text" : 'ばいばい',
+        "type" : 'text'
+      }]);    
     }
   }
 
@@ -83,37 +116,32 @@ function handleEvent(event) {
 
 
   if(event.message.text === 'いっぱい' || event.message.text === 'まだ大丈夫' || event.message.text === 'ポイントは？'){
-    level ++ ;
+    // level++;
     client.pushMessage(event.source.userId, [{
       "text" : 'ありがとうございます！',
       "type" : 'text'
     },{
-      "text" : 'あなたは'+level+'pointあります。',
+      "text" : 'あなたは'+ user_hash[event.source.userId]["level"] + 'pointあります。',
       "type" : 'text'
     }]
   );
 
-    can_flag = "1";
     setTimeout(myFunc, 3000);
 
-  }else if(event.message.text === 'はい'){
-    if(level >5){
-      level=0;
+  } else if(event.message.text === 'はい'){
+    can_flag = "1";
+    let cur_user_level = user_hash[event.source.userId]["level"];
+    if(cur_user_level > 5){
+      user_hash[event.source.userId]["level"] = 0;
     }else{
-      level ++ ;
+      user_hash[event.source.userId]["level"] = cur_user_level + 1;
     }
     client.pushMessage(event.source.userId, [{
-      "type": "location",
-      "title": "ここにあります。",
-      "address": "東京大学本郷キャンパス工学部２号館",
-      "latitude": 35.7144598,
-      "longitude": 139.7620094
-        }, {
       "type": "template",
-      "altText": "ゴミはいっぱいですか？",
+      "altText": "ゴミ箱はいっぱいでしたか？",
       "template": {
           "type": "confirm",
-          "text": "ゴミはいっぱいですか？",
+          "text": "ゴミ箱はいっぱいでしたか？",
           "actions": [
               {
                 "type": "message",
