@@ -8,6 +8,7 @@ const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFa
 const os = require('os');
 const hostname = os.hostname();
 const request = require('request');
+const http = require('https');
 
 const axios = require('axios');
 const PORT = process.env.PORT || 3000;
@@ -45,7 +46,7 @@ app.get('/trashcan/1/status', function (req, res) {
 })
 
 app.get('/', function (req, res) {
-  res.send("https://" + hostname + "/images/img.jpg");
+  res.send("https://" + hostname + "/images/imga.jpg");
 })
 
 app.use('/images', express.static('images'))
@@ -62,7 +63,7 @@ app.use((err, req, res, next) => {
 })
 
 const client = new line.Client(config);
-const img_url = "https://hack-api-gomi.now.sh/images/img.jpg"
+const img_url = "https://hack-api-gomi.now.sh/images/imga.jpg"
 
 function getObjectName(image_data) {
   console.log(image_data.length)
@@ -150,7 +151,7 @@ function handleEvent(event) {
     }
   }
 
-  if (event.message.type == 'image') {
+  if (event.message.type != undefined && event.message.type == 'image') {
     let image_buf;
     const options = {
       url: `https://api.line.me/v2/bot/message/${event.message.id}/content`,
@@ -160,17 +161,27 @@ function handleEvent(event) {
       },
       encoding: null
     };
-    var req = https.request(send_options, function(res){
+    const send_options = {
+        host: 'api.line.me',
+        path: `/v2/bot/message/${event.message.id}/content`,
+        headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "Authorization": " Bearer " + config.channelAccessToken 
+        },
+        method:'GET'
+    };
+
+    console.log("image message has been sent");
+    var req = http.request(send_options, function(res){
       var data = [];
+
+      console.log("recieved the image");
       res.on('data', function(chunk){
-        //image data dividing it in to multiple request
         data.push(new Buffer(chunk));
       }).on('error', function(err){
         console.log(err);
       }).on('end', function(){
-        // ここに画像取得後の処理を書く
-        // この場合は、引数で受け取った画像取得後の処理用callbackを実行
-        // dataに画像のバイナリデータが入ってる
+        console.log("finished recieving the image");
         getObjectName(data);
       });
     });
